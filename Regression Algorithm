@@ -1,0 +1,317 @@
+How to write a regression algorithm very easy to predict the model within 25 steps
+See how it is 
+
+
+#importing libraries
+import pandas as pd
+import numpy as np 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Ignore harmless warnings 
+
+import warnings 
+warnings.filter warnings("ignore")
+
+# Set to display all the columns in the dataset
+
+PD.set_option("display.max_columns", None)
+
+# Import psql to run queries 
+
+import pandasql as psql
+# Load the Health Insurance dataset 
+
+HealthIns = pd.read_csv(r"C:\Users\5480\Downloads\Health_Ins_Expenses.csv", header=0)
+
+# Copy to the backup file
+
+HealthIns_BK = HealthIns.copy()
+
+# Display the first 5 records
+
+HealthIns.head()
+Record_ID	Age	Gender	BMI	Children	Smoker	Region	Expenses
+0	QK-136276906	43	male	36.25	1	yes	southeast	40293.04
+1	NR-126120553	40	male	34.56	2	no	southeast	23569.63
+2	HY-182936067	48	male	26.04	5	no	southwest	10115.35
+3	HF-142445422	50	male	31.09	3	yes	northwest	40736.57
+4	NM-183693148	42	male	33.04	1	yes	northeast	39144.85
+# Display the dataset information
+
+HealthIns.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 6695 entries, 0 to 6694
+Data columns (total 8 columns):
+ #   Column     Non-Null Count  Dtype  
+---  ------     --------------  -----  
+ 0   Record_ID  6695 non-null   object 
+ 1   Age        6695 non-null   int64  
+ 2   Gender     6695 non-null   object 
+ 3   BMI        6695 non-null   float64
+ 4   Children   6695 non-null   int64  
+ 5   Smoker     6695 non-null   object 
+ 6   Region     6695 non-null   object 
+ 7   Expenses   6695 non-null   float64
+dtypes: float64(2), int64(2), object(4)
+memory usage: 418.6+ KB
+# Displaying Duplicate values with in dataset
+
+HealthIns_dup = HealthIns[HealthIns.duplicated(keep='last')]
+
+# Display the duplicate records
+
+HealthIns_dup
+Record_ID	Age	Gender	BMI	Children	Smoker	Region	Expenses
+240	ZZ-131148293	22	female	24.73	1	no	southeast	2216.02
+241	BQ-160063838	21	female	37.40	0	no	southeast	1634.08
+242	UO-189044287	57	male	43.70	1	no	southwest	11576.13
+246	OT-130753432	41	female	30.18	1	no	southeast	6515.36
+247	BH-153144132	50	male	36.20	0	no	southwest	8457.82
+# Remove the identified duplicate records 
+
+HealthIns = HealthIns.drop_duplicates()
+
+# Display the shape of the dataset
+
+HealthIns.shape
+(6690, 8)
+# Re-setting the row index
+
+HealthIns = HealthIns.reset_index(drop=True)
+
+# Copy file to back-up file after deletion of duplicate records
+
+HealthIns_BK2 = HealthIns.copy()
+# Display the dataset information after delection of duplicates
+
+HealthIns.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 6690 entries, 0 to 6689
+Data columns (total 8 columns):
+ #   Column     Non-Null Count  Dtype  
+---  ------     --------------  -----  
+ 0   Record_ID  6690 non-null   object 
+ 1   Age        6690 non-null   int64  
+ 2   Gender     6690 non-null   object 
+ 3   BMI        6690 non-null   float64
+ 4   Children   6690 non-null   int64  
+ 5   Smoker     6690 non-null   object 
+ 6   Region     6690 non-null   object 
+ 7   Expenses   6690 non-null   float64
+dtypes: float64(2), int64(2), object(4)
+memory usage: 418.2+ KB
+# Display the unique values of the all the variables
+
+HealthIns.nunique()
+Record_ID    6690
+Age            51
+Gender          2
+BMI          2227
+Children        6
+Smoker          2
+Region          4
+Expenses     6673
+dtype: int64
+# Display the missing values information of variables
+
+HealthIns.isnull().sum()
+Record_ID    0
+Age          0
+Gender       0
+BMI          0
+Children     0
+Smoker       0
+Region       0
+Expenses     0
+dtype: int64
+# Display 'Gender' categorical variable 
+
+HealthIns['Gender'].value_counts()
+1    3401
+0    3289
+Name: Gender, dtype: int64
+# Replace 'Gender' variable and convert to integer value.
+
+HealthIns['Gender'] = HealthIns['Gender'].str.replace('female', '0')
+HealthIns['Gender'] = HealthIns['Gender'].str.replace('male', '1')
+HealthIns['Gender'] = HealthIns['Gender'].astype(int)
+# Display 'Smoker' categorical variable 
+
+HealthIns['Smoker'].value_counts()
+0    5320
+1    1370
+Name: Smoker, dtype: int64
+# Replace 'Smoker' variable and convert as a integer value.
+
+HealthIns['Smoker'] = HealthIns['Smoker'].str.replace('no', '0')
+HealthIns['Smoker'] = HealthIns['Smoker'].str.replace('yes', '1')
+HealthIns['Smoker'] = HealthIns['Smoker'].astype(int)
+# Display 'Region' categorical variable 
+
+HealthIns['Region'].value_counts()
+southeast    1820
+southwest    1625
+northwest    1625
+northeast    1620
+Name: Region, dtype: int64
+# Replace 'Region' variable and convert to integer value.
+
+HealthIns['Region'] = HealthIns['Region'].str.replace('northeast', '0')
+HealthIns['Region'] = HealthIns['Region'].str.replace('northwest', '1')
+HealthIns['Region'] = HealthIns['Region'].str.replace('southeast', '2')
+HealthIns['Region'] = HealthIns['Region'].str.replace('southwest', '3')
+HealthIns['Region'] = HealthIns['Region'].astype(int)
+# Display the dataset information after transformation of data
+
+HealthIns.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 6690 entries, 0 to 6689
+Data columns (total 8 columns):
+ #   Column     Non-Null Count  Dtype  
+---  ------     --------------  -----  
+ 0   Record_ID  6690 non-null   object 
+ 1   Age        6690 non-null   int64  
+ 2   Gender     6690 non-null   int32  
+ 3   BMI        6690 non-null   float64
+ 4   Children   6690 non-null   int64  
+ 5   Smoker     6690 non-null   int32  
+ 6   Region     6690 non-null   int32  
+ 7   Expenses   6690 non-null   float64
+dtypes: float64(2), int32(3), int64(2), object(1)
+memory usage: 339.9+ KB
+# Display all the variables
+
+HealthIns.columns
+Index(['Record_ID', 'Age', 'Gender', 'BMI', 'Children', 'Smoker', 'Region',
+       'Expenses'],
+      dtype='object')
+# Identify the variables for scaling (MinMaxScalar)
+
+cols = ['Age', 'BMI', 'Children','Region']
+# Delete variables which are not influencing the target variable
+
+del HealthIns['Record_ID']
+# Identify the independent and Target (dependent) variables
+
+IndepVar = []
+for col in HealthIns.columns:
+    if col != 'Expenses':
+        IndepVar.append(col)
+
+TargetVar = 'Expenses'
+
+x = HealthIns[IndepVar]
+y = HealthIns[TargetVar]
+# Split the data into train and test (random sampling)
+
+from sklearn.model_selection import train_test_split 
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+
+# Display the shape for train & test data
+
+x_train.shape, x_test.shape, y_train.shape, y_test.shape
+((4683, 6), (2007, 6), (4683,), (2007,))
+# Scaling the features by using MinMaxScaler
+
+from sklearn.preprocessing import MinMaxScaler
+
+mmscaler = MinMaxScaler(feature_range=(0, 1))
+
+x_train[cols] = mmscaler.fit_transform(x_train[cols])
+x_train = pd.DataFrame(x_train)
+
+x_test[cols] = mmscaler.fit_transform(x_test[cols])
+x_test = pd.DataFrame(x_test)
+Regression Algorithm with Healthcare dataset
+# Train the algorithm and build the model with train dataset
+
+from sklearn.linear_model import LinearRegression
+
+# Create an object for regression model
+
+ModelRGR = LinearRegression()
+
+# Train the model with training dataset
+
+ModelRGR.fit(x_train, y_train)
+
+# Predict the model with test dataset
+
+y_pred = ModelRGR.predict(x_test)
+
+# Evaluation metrics for Regression model
+
+from sklearn import metrics
+
+print('Mean Absolute Error (MAE):', round(metrics.mean_absolute_error(y_test, y_pred),3))  
+print('Mean Squared Error (MSE):', round(metrics.mean_squared_error(y_test, y_pred),3))  
+print('Root Mean Squared Error (RMSE):', round(np.sqrt(metrics.mean_squared_error(y_test, y_pred)),3))
+print('R2_score:', round(metrics.r2_score(y_test, y_pred),6))
+print('Mean Absolute Error (MAE):', round(metrics.mean_absolute_error(y_test, y_pred),3))  
+print('Mean Absolute Percentage Error (MAPE):', round(metrics.mean_absolute_percentage_error(y_test, y_pred)*100,3), '%')
+print('Root Mean Squared Log Error (RMSLE):', round(np.log(np.sqrt(metrics.mean_squared_error(y_test, y_pred))),3))
+
+# Define the function to calculate the MAPE - Mean Absolute Percentage Error
+
+def MAPE (y_test, y_pred): 
+    y_test, y_pred = np.array(y_test), np.array(y_pred)
+    return np.mean(np.abs((y_test - y_pred) / y_test)) * 100
+
+# Evaluation of MAPE 
+
+result = MAPE(y_test, y_pred)
+print('Mean Absolute Percentage Error (MAPE):', round(result, 3), '%')
+
+# Calculate Adjusted R squared values 
+
+r_squared = round(metrics.r2_score(y_test, y_pred),6)
+adjusted_r_squared = round(1 - (1-r_squared)*(len(y)-1)/(len(y)-x.shape[1]-1),6)
+print('Adj R Square: ', adjusted_r_squared)
+Mean Absolute Error (MAE): 4263.032
+Mean Squared Error (MSE): 36555289.434
+Root Mean Squared Error (RMSE): 6046.097
+R2_score: 0.757411
+Mean Absolute Error (MAE): 4263.032
+Mean Absolute Percentage Error (MAPE): 44.906 %
+Root Mean Squared Log Error (RMSLE): 8.707
+Mean Absolute Percentage Error (MAPE): 44.906 %
+Adj R Square:  0.757193
+# Display the Final results 
+
+Results = pd.DataFrame({'Expenses_A':y_test, 'Expenses_P':y_pred})
+
+# Merge two Dataframes on index of both the dataframes
+
+ResultsFinal = HealthIns_BK2.merge(Results, left_index=True, right_index=True)
+
+# Display 10 records randomly
+
+ResultsFinal.sample(10)
+Record_ID	Age	Gender	BMI	Children	Smoker	Region	Expenses	Expenses_A	Expenses_P
+5377	EO-154333753	63	male	37.38	0	no	northeast	12758.18	12758.18	15772.972959
+3103	OW-166561942	60	male	30.06	2	no	southeast	12931.60	12931.60	12856.358454
+1128	JW-135433490	41	female	30.43	1	no	southeast	6513.32	6513.32	8039.116143
+3710	GE-195458990	29	male	24.39	0	yes	northwest	15822.27	15822.27	25983.019369
+6424	VV-144551480	46	female	26.08	1	no	southwest	7635.02	7635.02	7437.105398
+1832	TZ-164198402	22	female	27.34	0	no	southeast	1632.11	1632.11	1716.364883
+6633	AS-181448979	31	male	29.14	3	yes	northwest	20762.10	20762.10	29694.766368
+6373	OT-130939439	43	female	33.67	0	no	northwest	6583.52	6583.52	9476.177539
+3129	NO-126675626	45	male	38.34	2	yes	southeast	42565.72	42565.72	35510.776778
+1921	SP-183519961	32	male	32.45	2	no	northwest	4442.84	4442.84	7054.157203
+del ResultsFinal['Expenses_A']
+
+ResultsFinal.sample(10)
+Record_ID	Age	Gender	BMI	Children	Smoker	Region	Expenses	Expenses_P
+3393	YI-169188264	22	female	26.36	1	no	northwest	2718.77	2236.053080
+1405	LO-155959676	23	male	31.78	0	no	southwest	1545.04	2862.539732
+2284	TZ-158721457	27	male	30.30	3	no	southwest	4260.74	4911.017480
+4609	LT-167338870	37	male	34.95	0	no	southeast	3954.88	7784.035289
+6529	KS-179042688	46	male	31.99	0	no	northwest	6366.90	9334.760275
+4724	PF-159521090	42	male	38.93	3	yes	southeast	41959.62	35490.887130
+1430	HY-142649611	43	female	33.40	2	yes	northwest	40018.07	33942.279795
+3571	EG-154974286	21	male	27.99	0	yes	southwest	16244.76	24565.658379
+6497	IU-150121039	47	female	34.25	1	no	northeast	8835.76	11532.528830
+1805	WE-175155136	44	female	34.94	3	no	southwest	8541.23	11056.870351
+ 
